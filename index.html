@@ -7,6 +7,7 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0nYmcnIGN4PSc1MCUnIGN5PSc1MCUnIHI9JzUwJSc+CjxzdG9wIG9mZnNldD0nMCUnIHN0b3AtY29sb3I9JyM0Mjk5ZTEnLz4KPHN0b3Agb2Zmc2V0PScxMDAlJyBzdG9wLWNvbG9yPScjMmQzNzQ4Jy8+CjwvcmFkaWFsR3JhZGllbnQ+CjwvZGVmcz4KPGNpcmNsZSBjeD0nMTYnIGN5PScxNicgcj0nMTUnIGZpbGw9J3VybCgjYmcpJyBzdHJva2U9JyM5ZjdhZWEnIHN0cm9rZS13aWR0aD0nMScvPgo8ZWxsaXBzZSBjeD0nMTYnIGN5PScxOCcgcng9JzgnIHJ5PSc2JyBmaWxsPScjZmZmZmZmJyBvcGFjaXR5PScwLjknLz4KPGNpcmNsZSBjeD0nMTMnIGN5PScxNicgcj0nMS41JyBmaWxsPScjMmQzNzQ4Jy8+CjxjaXJjbGUgY3g9JzE5JyBjeT0nMTYnIHI9JzEuNScgZmlsbD0nIzJkMzc0OCcvPgo8ZWxsaXBzZSBjeD0nMTYnIGN5PScxOScgcng9JzInIHJ5PScxJyBmaWxsPScjNDI5OWUxJy8+CjxlbGxpcHNlIGN4PScxMScgY3k9JzEzJyByeD0nMicgcnk9JzMnIGZpbGw9JyNmZmZmZmYnIG9wYWNpdHk9JzAuOCcvPgo8ZWxsaXBzZSBjeD0nMjEnIGN5PScxMycgcng9JzInIHJ5PSczJyBmaWxsPScjZmZmZmZmJyBvcGFjaXR5PScwLjgnLz4KPC9zdmc+">
     <link rel="shortcut icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczMicgaGVpZ2h0PSczMicgdmlld0JveD0nMCAwIDMyIDMyJz4KPGRlZnM+CjxyYWRpYWxHcmFkaWVudCBpZD0nYmcnIGN4PSc1MCUnIGN5PSc1MCUnIHI9JzUwJSc+CjxzdG9wIG9mZnNldD0nMCUnIHN0b3AtY29sb3I9JyM0Mjk5ZTEnLz4KPHN0b3Agb2Zmc2V0PScxMDAlJyBzdG9wLWNvbG9yPScjMmQzNzQ4Jy8+CjwvcmFkaWFsR3JhZGllbnQ+CjwvZGVmcz4KPGNpcmNsZSBjeD0nMTYnIGN5PScxNicgcj0nMTUnIGZpbGw9J3VybCgjYmcpJyBzdHJva2U9JyM5ZjdhZWEnIHN0cm9rZS13aWR0aD0nMScvPgo8ZWxsaXBzZSBjeD0nMTYnIGN5PScxOCcgcng9JzgnIHJ5PSc2JyBmaWxsPScjZmZmZmZmJyBvcGFjaXR5PScwLjknLz4KPGNpcmNsZSBjeD0nMTMnIGN5PScxNicgcj0nMS41JyBmaWxsPScjMmQzNzQ4Jy8+CjxjaXJjbGUgY3g9JzE5JyBjeT0nMTYnIHI9JzEuNScgZmlsbD0nIzJkMzc0OCcvPgo8ZWxsaXBzZSBjeD0nMTYnIGN5PScxOScgcng9JzInIHJ5PScxJyBmaWxsPScjNDI5OWUxJy8+CjxlbGxpcHNlIGN4PScxMScgY3k9JzEzJyByeD0nMicgcnk9JzMnIGZpbGw9JyNmZmZmZmYnIG9wYWNpdHk9JzAuOCcvPgo8ZWxsaXBzZSBjeD0nMjEnIGN5PScxMycgcng9JzInIHJ5PSczJyBmaWxsPScjZmZmZmZmJyBvcGFjaXR5PScwLjgnLz4KPC9zdmc+">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -818,6 +819,171 @@
             {no: "154B", name: "Whalaska Ignis", elements: ["Fire"], skill: "Ocean Lord", work: "Kindling Lv4, Transporting Lv2"},
             {no: "155", name: "Neptilius", elements: ["Water"], skill: "Tidal Sovereign", work: "Watering Lv4"}
         ];
+
+        // Supabase Configuration
+        // To set up Supabase integration:
+        // 1. Create a Supabase project at https://supabase.com
+        // 2. Replace the URLs below with your project details
+        // 3. Follow the setup guide in supabase-setup.md
+        
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // Replace with your Supabase URL
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your Supabase anon key
+        
+        // Configuration options
+        const CONFIG = {
+            enableSupabaseSync: true, // Set to false to disable Supabase completely
+            enableDebugMode: false, // Set to true to enable debug logging
+            autoSyncInterval: 30000, // Auto-sync interval in milliseconds (30 seconds)
+            enableAutoSync: false // Set to true to enable automatic syncing
+        };
+        
+        let supabase = null;
+        let isSupabaseConnected = false;
+        
+        // Initialize Supabase client
+        function initSupabase() {
+            if (!CONFIG.enableSupabaseSync) {
+                console.log('Supabase sync disabled in configuration');
+                return;
+            }
+            
+            try {
+                if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    isSupabaseConnected = true;
+                    console.log('Supabase initialized successfully');
+                    updateConnectionStatus();
+                    
+                    // Set up auto-sync if enabled
+                    if (CONFIG.enableAutoSync) {
+                        setInterval(() => {
+                            if (CONFIG.enableDebugMode) {
+                                console.log('Auto-syncing data...');
+                            }
+                            saveToSupabase(palStats, medalStats);
+                        }, CONFIG.autoSyncInterval);
+                    }
+                } else {
+                    console.log('Supabase not configured - using localStorage only');
+                    console.log('See supabase-setup.md for configuration instructions');
+                }
+            } catch (error) {
+                console.error('Failed to initialize Supabase:', error);
+                isSupabaseConnected = false;
+                updateConnectionStatus();
+            }
+        }
+
+        // Update connection status in UI
+        function updateConnectionStatus() {
+            // Add connection status indicator to the header
+            const header = document.querySelector('.header-actions');
+            let statusIndicator = document.getElementById('supabase-status');
+            
+            if (!statusIndicator) {
+                statusIndicator = document.createElement('div');
+                statusIndicator.id = 'supabase-status';
+                statusIndicator.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    padding: 0.5rem 1rem;
+                    border-radius: 8px;
+                    font-size: 0.8rem;
+                    margin-right: 1rem;
+                `;
+                header.insertBefore(statusIndicator, header.firstChild);
+            }
+            
+            if (isSupabaseConnected) {
+                statusIndicator.innerHTML = '🟢 Cloud Sync';
+                statusIndicator.style.background = 'rgba(34, 197, 94, 0.1)';
+                statusIndicator.style.color = '#22c55e';
+                statusIndicator.style.border = '1px solid rgba(34, 197, 94, 0.2)';
+            } else {
+                statusIndicator.innerHTML = '🔄 Local Only';
+                statusIndicator.style.background = 'rgba(251, 191, 36, 0.1)';
+                statusIndicator.style.color = '#fbbf24';
+                statusIndicator.style.border = '1px solid rgba(251, 191, 36, 0.2)';
+            }
+        }
+
+        // Sync data with Supabase
+        async function syncWithSupabase() {
+            if (!isSupabaseConnected) return;
+            
+            try {
+                // TODO: Implement data sync logic
+                console.log('Syncing data with Supabase...');
+            } catch (error) {
+                console.error('Error syncing with Supabase:', error);
+            }
+        }
+
+        // Load data from Supabase
+        async function loadFromSupabase() {
+            if (!isSupabaseConnected) return null;
+            
+            try {
+                // For now, we'll use a simple approach without authentication
+                // In the future, this would load user-specific data
+                console.log('Loading data from Supabase...');
+                
+                // This is a placeholder - would need user authentication to implement properly
+                // For now, we'll just return null to fall back to localStorage
+                return null;
+            } catch (error) {
+                console.error('Error loading from Supabase:', error);
+                return null;
+            }
+        }
+
+        // Save data to Supabase
+        async function saveToSupabase(stats, medals) {
+            if (!isSupabaseConnected) return;
+            
+            try {
+                console.log('Saving data to Supabase...', { stats, medals });
+                
+                // This is a placeholder - would need user authentication to implement properly
+                // For now, we'll just log the data that would be saved
+                console.log('Would save to Supabase:', {
+                    stats: Object.keys(stats).length + ' pal stats',
+                    medals: Object.keys(medals).length + ' medal stats'
+                });
+                
+                // Future implementation would:
+                // 1. Get authenticated user ID
+                // 2. Upsert data to user_stats table
+                // 3. Handle conflicts and merging
+                
+            } catch (error) {
+                console.error('Error saving to Supabase:', error);
+            }
+        }
+
+        // Sync all pal data to Supabase (admin function for future use)
+        async function syncPalDataToSupabase() {
+            if (!isSupabaseConnected) {
+                console.log('Supabase not connected');
+                return;
+            }
+            
+            try {
+                console.log('This function would sync the palData array to Supabase pals table');
+                console.log('Total pals to sync:', palData.length);
+                
+                // Future implementation would:
+                // 1. Check if user has admin privileges
+                // 2. Upsert all palData to the pals table
+                // 3. Handle version conflicts
+                // 4. Notify other users of updates
+                
+            } catch (error) {
+                console.error('Error syncing pal data to Supabase:', error);
+            }
+        }
+
         let filteredData = [...palData];
         let palStats = {};
         let medalStats = {};
@@ -861,6 +1027,14 @@
             const caught = parseInt(input.value) || 0;
             palStats[palNo] = caught;
             localStorage.setItem('palworldStats', JSON.stringify(palStats));
+            
+            if (CONFIG.enableDebugMode) {
+                console.log(`Updated ${palNo} caught count to ${caught}`);
+            }
+            
+            // Sync with Supabase
+            saveToSupabase(palStats, medalStats);
+            
             updateStats();
             renderTable();
         }
@@ -869,6 +1043,14 @@
             const palNo = checkbox.dataset.pal;
             medalStats[palNo] = checkbox.checked;
             localStorage.setItem('palworldMedals', JSON.stringify(medalStats));
+            
+            if (CONFIG.enableDebugMode) {
+                console.log(`Updated ${palNo} medal status to ${checkbox.checked}`);
+            }
+            
+            // Sync with Supabase
+            saveToSupabase(palStats, medalStats);
+            
             updateStats();
         }
 
@@ -1072,28 +1254,47 @@
         });
 
         // Load saved data and initialize
-        const savedStats = localStorage.getItem('palworldStats');
-        const savedMedals = localStorage.getItem('palworldMedals');
-        if (savedStats) {
-            palStats = JSON.parse(savedStats);
-        }
-        if (savedMedals) {
-            medalStats = JSON.parse(savedMedals);
+        async function initializeApp() {
+            // Initialize Supabase first
+            initSupabase();
+            
+            // Try to load data from Supabase first, fall back to localStorage
+            const cloudData = await loadFromSupabase();
+            
+            if (cloudData) {
+                palStats = cloudData.stats || {};
+                medalStats = cloudData.medals || {};
+                console.log('Loaded data from Supabase');
+            } else {
+                // Fall back to localStorage
+                const savedStats = localStorage.getItem('palworldStats');
+                const savedMedals = localStorage.getItem('palworldMedals');
+                if (savedStats) {
+                    palStats = JSON.parse(savedStats);
+                }
+                if (savedMedals) {
+                    medalStats = JSON.parse(savedMedals);
+                }
+                console.log('Loaded data from localStorage');
+            }
+            
+            // Fix for palData elements array
+            palData.forEach(pal => {
+                if (typeof pal.elements === 'string') {
+                    pal.elements = [pal.elements];
+                }
+            });
+
+            updateStats();
+            renderTable();
         }
 
         function formatPalNo(palNo) {
             return palNo.toString().replace(/^0+(?=\d)/, '');
         }
 
-        // Fix for palData elements array
-        palData.forEach(pal => {
-            if (typeof pal.elements === 'string') {
-                pal.elements = [pal.elements];
-            }
-        });
-
-        updateStats();
-        renderTable();
+        // Initialize the app
+        initializeApp();
 
                 // Parallax effect for table background
         document.addEventListener('mousemove', (e) => {
