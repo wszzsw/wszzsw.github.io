@@ -3,324 +3,601 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palworld Pal Collection Tracker</title>
+    <title>Palworld Collection Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        * {
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #2d3748 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
             min-height: 100vh;
         }
 
-        .container {
-            max-width: 1400px;
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4299e1 0%, #9f7aea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo p {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 0.5rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
         }
 
         .header {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4299e1 0%, #9f7aea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4299e1 0%, #9f7aea 100%);
             color: white;
-            padding: 30px;
-            text-align: center;
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .header p {
-            margin: 10px 0 0 0;
-            font-size: 1.1em;
-            opacity: 0.9;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(66, 153, 225, 0.3);
         }
 
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4299e1, #9f7aea);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-progress {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .stat-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4299e1, #9f7aea);
+            transition: width 0.6s ease;
+        }
+
+        /* Controls */
         .controls {
-            padding: 20px 30px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 1rem;
             align-items: center;
         }
 
-        .search-box {
+        .search-container {
             flex: 1;
-            min-width: 250px;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            min-width: 300px;
+            position: relative;
         }
 
-        .search-box:focus {
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
             outline: none;
-            border-color: #4f46e5;
+            border-color: #4299e1;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
         }
 
         .filter-btn {
-            padding: 10px 20px;
-            border: 2px solid #4f46e5;
-            background: white;
-            color: #4f46e5;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            font-weight: 500;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
 
         .filter-btn.active {
-            background: #4f46e5;
+            background: linear-gradient(135deg, #4299e1 0%, #9f7aea 100%);
+            border-color: transparent;
             color: white;
         }
 
         .filter-btn:hover {
-            background: #4f46e5;
-            color: white;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
         }
 
-        .stats {
-            padding: 20px 30px;
-            background: #f1f5f9;
-            border-bottom: 1px solid #e2e8f0;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-        }
-
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #4f46e5;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #64748b;
-            font-weight: 600;
-        }
-
+        /* Table Container */
         .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .table-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://images.unsplash.com/photo-1578662996442-48f60103fc96?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px) opacity(0.15);
+            transform: scale(1.1);
+            transition: transform 0.1s ease-out;
+            z-index: -1;
+        }
+
+        .table-wrapper {
             overflow-x: auto;
-            max-height: 600px;
+            max-height: 69vh;
             overflow-y: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
         }
 
         th {
-            background: #4f46e5;
-            color: white;
-            padding: 15px 12px;
+            background: rgba(15, 20, 25, 0.8);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
             text-align: left;
             font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             position: sticky;
             top: 0;
             z-index: 10;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         td {
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             vertical-align: middle;
         }
 
         tr:hover {
-            background: #f8fafc;
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .pal-number {
-            font-weight: bold;
-            color: #4f46e5;
-            text-align: center;
+            font-weight: 700;
+            color: #4299e1;
+            font-size: 0.9rem;
             min-width: 60px;
         }
 
         .pal-name {
             font-weight: 600;
-            color: #1e293b;
-            min-width: 120px;
+            min-width: 150px;
+        }
+
+        .pal-name a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .pal-name a:hover {
+            color: #4299e1;
         }
 
         .element {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 12px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: 600;
             color: white;
-            margin: 2px;
+            margin: 0.125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .fire { background: #ef4444; }
-        .water { background: #3b82f6; }
-        .grass { background: #22c55e; }
-        .electric { background: #eab308; }
-        .ice { background: #06b6d4; }
-        .ground { background: #a3a3a3; }
-        .dark { background: #374151; }
-        .dragon { background: #8b5cf6; }
-        .neutral { background: #6b7280; }
+        .fire { background: linear-gradient(135deg, #f56565, #e53e3e); }
+        .water { background: linear-gradient(135deg, #4299e1, #3182ce); }
+        .grass { background: linear-gradient(135deg, #48bb78, #38a169); }
+        .electric { background: linear-gradient(135deg, #ed8936, #dd6b20); }
+        .ice { background: linear-gradient(135deg, #63b3ed, #4299e1); }
+        .ground { background: linear-gradient(135deg, #a0aec0, #718096); }
+        .dark { background: linear-gradient(135deg, #4a5568, #2d3748); }
+        .dragon { background: linear-gradient(135deg, #9f7aea, #805ad5); }
+        .neutral { background: linear-gradient(135deg, #a0aec0, #718096); }
 
-        .caught-input {
-            width: 60px;
-            padding: 8px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
+        .input-field {
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
             text-align: center;
             font-weight: 600;
-            transition: border-color 0.3s;
+            width: 70px;
+            transition: all 0.3s ease;
         }
 
-        .caught-input:focus {
+        .input-field:focus {
             outline: none;
-            border-color: #4f46e5;
+            border-color: #4299e1;
+            background: rgba(255, 255, 255, 0.15);
         }
 
-        .needed {
-            font-weight: bold;
+        .needed-badge {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
             text-align: center;
-            padding: 8px;
-            border-radius: 6px;
             min-width: 60px;
+            font-size: 0.85rem;
         }
 
-        .needed.complete {
-            background: #dcfce7;
-            color: #166534;
+        .needed-badge.complete {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
         }
 
-        .needed.partial {
-            background: #fef3c7;
-            color: #92400e;
+        .needed-badge.partial {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+            color: white;
+        }
+
+        .needed-badge.none {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .medal-checkbox {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             cursor: pointer;
+            accent-color: #ffd700;
             transform: scale(1.2);
-        }
-
-        .medal-checkbox:checked {
-            accent-color: #fbbf24;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #e2e8f0;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
-            transition: width 0.3s ease;
-        }
-
-        .export-btn {
-            background: #22c55e;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .export-btn:hover {
-            background: #16a34a;
         }
 
         .hidden {
             display: none;
         }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 0.75rem;
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-value {
+                font-size: 1.8rem;
+            }
+
+            .stat-label {
+                font-size: 0.75rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container {
+                min-width: auto;
+            }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, rgba(72, 187, 120, 0.9), rgba(56, 161, 105, 0.9));
+            border: 1px solid rgba(72, 187, 120, 0.3);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, rgba(245, 101, 101, 0.9), rgba(229, 62, 62, 0.9));
+            border: 1px solid rgba(245, 101, 101, 0.3);
+        }
+
+        /*Caught Input*/
+        .caught-input {
+            padding: 0.75rem 0.5rem;
+            background: rgba(15, 20, 25, 0.8);
+            border: 2px solid rgba(66, 153, 225, 0.3);
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            width: 80px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .caught-input:focus {
+            outline: none;
+            border-color: #4299e1;
+            background: rgba(66, 153, 225, 0.15);
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+            transform: scale(1.05);
+        }
+
+        .caught-input:hover {
+            border-color: rgba(66, 153, 225, 0.5);
+            background: rgba(15, 20, 25, 0.9);
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        .caught-input::-webkit-outer-spin-button,
+        .caught-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        .caught-input[type=number] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎮 Palworld Collection Tracker</h1>
-            <p>Track your progress to catch 12 of each Pal! Updated with Tides of Terraria content</p>
-        </div>
+    <div class="app-container">
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-title">Pal Tracker</div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="document.getElementById('csvImport').click()">
+                        📥 Import
+                    </button>
+                    <button class="btn btn-primary" onclick="exportToCSV()">
+                        📊 Export
+                    </button>
+                </div>
+            </div>
 
-        <div class="controls">
-            <input type="text" class="search-box" placeholder="🔍 Search Pals by name or number..." id="searchInput">
-            <button class="filter-btn active" data-filter="all">All Pals</button>
-            <button class="filter-btn" data-filter="needed">Need More</button>
-            <button class="filter-btn" data-filter="complete">Complete (12+)</button>
-            <button class="export-btn" onclick="exportToCSV()">📊 Export to CSV</button>
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Pals</div>
+                    <div class="stat-value" id="totalPals">155</div>
+                    <div class="stat-progress">
+                        <div class="stat-progress-fill" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Complete (12+)</div>
+                    <div class="stat-value" id="completePals">0</div>
+                    <div class="stat-progress">
+                        <div class="stat-progress-fill" id="completeProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Total Caught</div>
+                    <div class="stat-value" id="totalCaught">0</div>
+                    <div class="stat-progress">
+                        <div class="stat-progress-fill" id="caughtProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">🏅 Medals Earned</div>
+                    <div class="stat-value" id="medalsEarned">0</div>
+                    <div class="stat-progress">
+                        <div class="stat-progress-fill" id="medalProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Progress</div>
+                    <div class="stat-value" id="progressPercent">0%</div>
+                    <div class="stat-progress">
+                        <div class="stat-progress-fill" id="overallProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <div class="search-container">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" class="search-input" placeholder="Search Pals by name or number..." id="searchInput">
+                </div>
+                
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">All Pals</button>
+                    <button class="filter-btn" data-filter="needed">Need More</button>
+                    <button class="filter-btn" data-filter="complete">Complete</button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container" id="tableContainer">
+                <div class="table-background" id="tableBackground"></div>
+                <div class="table-wrapper">
+                    <table id="palTable">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Pal Name</th>
+                                <th>Element(s)</th>
+                                <th>Partner Skill</th>
+                                <th>Work Suitability</th>
+                                <th>Caught</th>
+                                <th>Still Need</th>
+                                <th>Medal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="palTableBody">
+                            <!-- Pal data will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Hidden file input -->
             <input type="file" id="csvImport" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
-            <button class="export-btn" onclick="document.getElementById('csvImport').click()" style="background: #3b82f6;">📥 Import CSV</button>
-        </div>
-
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="totalPals">155</div>
-                <div class="stat-label">Total Pals</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="completePals">0</div>
-                <div class="stat-label">Complete (12+)</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalCaught">0</div>
-                <div class="stat-label">Total Caught</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="medalsEarned">0</div>
-                <div class="stat-label">🏅 Medals Earned</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="progressPercent">0%</div>
-                <div class="stat-label">Collection Progress</div>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table id="palTable">
-                <thead>
-                    <tr>
-                        <th>No.</th>
-                        <th>Pal Name</th>
-                        <th>Element(s)</th>
-                        <th>Partner Skill</th>
-                        <th>Work Suitability</th>
-                        <th>Caught</th>
-                        <th>Still Need</th>
-                        <th>Medal</th>
-                    </tr>
-                </thead>
-                <tbody id="palTableBody">
-                    <!-- Pal data will be inserted here by JavaScript -->
-                </tbody>
-            </table>
         </div>
     </div>
+
 
     <script>
         const palData = [
@@ -539,7 +816,6 @@
             {no: "154B", name: "Whalaska Ignis", elements: ["Fire"], skill: "Ocean Lord", work: "Kindling Lv4, Transporting Lv2"},
             {no: "155", name: "Neptilius", elements: ["Water"], skill: "Tidal Sovereign", work: "Watering Lv4"}
         ];
-
         let filteredData = [...palData];
         let palStats = {};
         let medalStats = {};
@@ -564,7 +840,9 @@
 
                 row.innerHTML = `
                     <td class="pal-number">${pal.no}</td>
-                    <td class="pal-name">${pal.name}</td>
+                    <td class="pal-name"><a href="https://paldeck.cc/pals/${(() => {
+                        return formatPalNo(pal.no);
+                    })()}" target="_blank">${pal.name}</a></td>
                     <td>${elementsHtml}</td>
                     <td>${pal.skill}</td>
                     <td>${pal.work}</td>
@@ -801,8 +1079,33 @@
             medalStats = JSON.parse(savedMedals);
         }
 
+        function formatPalNo(palNo) {
+            return palNo.toString().replace(/^0+(?=\d)/, '');
+        }
+
+        // Fix for palData elements array
+        palData.forEach(pal => {
+            if (typeof pal.elements === 'string') {
+                pal.elements = [pal.elements];
+            }
+        });
+
         updateStats();
         renderTable();
+
+                // Parallax effect for table background
+        document.addEventListener('mousemove', (e) => {
+            const tableBackground = document.getElementById('tableBackground');
+            if (tableBackground) {
+                const mouseX = e.clientX / window.innerWidth;
+                const mouseY = e.clientY / window.innerHeight;
+                
+                const moveX = (mouseX - 0.5) * 20; // Adjust multiplier for intensity
+                const moveY = (mouseY - 0.5) * 20;
+                
+                tableBackground.style.transform = `scale(1.1) translate(${moveX}px, ${moveY}px)`;
+            }
+        });
     </script>
 </body>
 </html>
