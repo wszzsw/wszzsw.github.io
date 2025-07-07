@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palworld Pal Collection Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #4f46e5;
+            background: white;
+            color: #4f46e5;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .stats {
+            padding: 20px 30px;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background: #4f46e5;
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .pal-number {
+            font-weight: bold;
+            color: #4f46e5;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .pal-name {
+            font-weight: 600;
+            color: #1e293b;
+            min-width: 120px;
+        }
+
+        .element {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            margin: 2px;
+        }
+
+        .fire { background: #ef4444; }
+        .water { background: #3b82f6; }
+        .grass { background: #22c55e; }
+        .electric { background: #eab308; }
+        .ice { background: #06b6d4; }
+        .ground { background: #a3a3a3; }
+        .dark { background: #374151; }
+        .dragon { background: #8b5cf6; }
+        .neutral { background: #6b7280; }
+
+        .caught-input {
+            width: 60px;
+            padding: 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+            transition: border-color 0.3s;
+        }
+
+        .caught-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+
+        .needed {
+            font-weight: bold;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            min-width: 60px;
+        }
+
+        .needed.complete {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .needed.partial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .medal-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+
+        .medal-checkbox:checked {
+            accent-color: #fbbf24;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            transition: width 0.3s ease;
+        }
+
+        .export-btn {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #16a34a;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Palworld Collection Tracker</h1>
+            <p>Track your progress to catch 12 of each Pal! Updated with Tides of Terraria content</p>
+        </div>
+
+        <div class="controls">
+            <input type="text" class="search-box" placeholder="🔍 Search Pals by name or number..." id="searchInput">
+            <button class="filter-btn active" data-filter="all">All Pals</button>
+            <button class="filter-btn" data-filter="needed">Need More</button>
+            <button class="filter-btn" data-filter="complete">Complete (12+)</button>
+            <button class="export-btn" onclick="exportToCSV()">📊 Export to CSV</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalPals">155</div>
+                <div class="stat-label">Total Pals</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completePals">0</div>
+                <div class="stat-label">Complete (12+)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalCaught">0</div>
+                <div class="stat-label">Total Caught</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="medalsEarned">0</div>
+                <div class="stat-label">🏅 Medals Earned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="progressPercent">0%</div>
+                <div class="stat-label">Collection Progress</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="palTable">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Pal Name</th>
+                        <th>Element(s)</th>
+                        <th>Partner Skill</th>
+                        <th>Work Suitability</th>
+                        <th>Caught</th>
+                        <th>Still Need</th>
+                        <th>Medal</th>
+                    </tr>
+                </thead>
+                <tbody id="palTableBody">
+                    <!-- Pal data will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const palData = [
+            {no: "001", name: "Lamball", elements: ["Neutral"], skill: "Fluffy Shield", work: "Handiwork Lv1, Transporting Lv1, Farming Lv1"},
+            {no: "002", name: "Cattiva", elements: ["Neutral"], skill: "Cat Helper", work: "Handiwork Lv1, Gathering Lv1, Mining Lv1, Transporting Lv1"},
+            {no: "003", name: "Chikipi", elements: ["Neutral"], skill: "Egg Layer", work: "Gathering Lv1, Farming Lv1"},
+            {no: "004", name: "Lifmunk", elements: ["Grass"], skill: "Lifmunk Recoil", work: "Planting Lv1, Handiwork Lv1, Lumbering Lv1, Medicine Production Lv1, Gathering Lv1"},
+            {no: "005", name: "Foxparks", elements: ["Fire"], skill: "Huggy Fire", work: "Kindling Lv1"},
+            {no: "005B", name: "Foxparks Cryst", elements: ["Ice"], skill: "Huggy Ice", work: "Cooling Lv1"},
+            {no: "006", name: "Fuack", elements: ["Water"], skill: "Surfing Slam", work: "Handiwork Lv1, Transporting Lv1, Watering Lv1"},
+            {no: "007", name: "Sparkit", elements: ["Electric"], skill: "Static Electricity", work: "Handiwork Lv1, Transporting Lv1, Generating Electricity Lv1"},
+            {no: "008", name: "Tanzee", elements: ["Grass"], skill: "Cheery Rifle", work: "Planting Lv1, Handiwork Lv1, Lumbering Lv1, Transporting Lv1, Gathering Lv1"},
+            {no: "009", name: "Rooby", elements: ["Fire"], skill: "Tiny Spark", work: "Kindling Lv1"},
+            {no: "010", name: "Pengullet", elements: ["Water", "Ice"], skill: "Pengullet Cannon", work: "Handiwork Lv1, Transporting Lv1, Watering Lv1, Cooling Lv1"},
+            {no: "010B", name: "Pengullet Lux", elements: ["Electric"], skill: "Pengullet Lux Launcher", work: "Handiwork Lv1, Transporting Lv1, Generating Electricity Lv1"},
+            {no: "011", name: "Penking", elements: ["Water", "Ice"], skill: "Brave Sailor", work: "Handiwork Lv2, Transporting Lv2, Watering Lv2, Mining Lv2, Cooling Lv2"},
+            {no: "011B", name: "Penking Lux", elements: ["Electric"], skill: "Electric Commander", work: "Handiwork Lv2, Transporting Lv2, Generating Electricity Lv2"},
+            {no: "012", name: "Jolthog", elements: ["Electric"], skill: "Jolt Bomb", work: "Generating Electricity Lv1"},
+            {no: "012B", name: "Jolthog Cryst", elements: ["Ice"], skill: "Cold Bomb", work: "Cooling Lv1"},
+            {no: "013", name: "Gumoss", elements: ["Grass"], skill: "Logging Assistance", work: "Planting Lv1"},
+            {no: "014", name: "Vixy", elements: ["Neutral"], skill: "Dig Here!", work: "Gathering Lv1, Farming Lv1"},
+            {no: "015", name: "Hoocrates", elements: ["Dark"], skill: "Dark Knowledge", work: "Gathering Lv1"},
+            {no: "016", name: "Teafant", elements: ["Water"], skill: "Soothing Shower", work: "Watering Lv1"},
+            {no: "017", name: "Depresso", elements: ["Dark"], skill: "Caffeine Inoculation", work: "Handiwork Lv1, Transporting Lv1, Mining Lv1"},
+            {no: "018", name: "Cremis", elements: ["Neutral"], skill: "Fluffy Wool", work: "Gathering Lv1, Farming Lv1"},
+            {no: "019", name: "Daedream", elements: ["Dark"], skill: "Dream Chaser", work: "Handiwork Lv1, Transporting Lv1, Gathering Lv1"},
+            {no: "020", name: "Rushoar", elements: ["Ground"], skill: "Hard Head", work: "Mining Lv1"},
+            {no: "021", name: "Nox", elements: ["Dark"], skill: "Kuudere", work: "Gathering Lv1"},
+            {no: "022", name: "Fuddler", elements: ["Ground"], skill: "Ore Detector", work: "Handiwork Lv1, Transporting Lv1, Mining Lv1"},
+            {no: "023", name: "Killamari", elements: ["Dark"], skill: "Fried Squid", work: "Transporting Lv2, Gathering Lv1"},
+            {no: "023B", name: "Killamari Primo", elements: ["Water", "Dark"], skill: "Primo Squid", work: "Watering Lv2, Transporting Lv2, Gathering Lv1"},
+            {no: "024", name: "Mau", elements: ["Dark"], skill: "Gold Digger", work: "Farming Lv1"},
+            {no: "024B", name: "Mau Cryst", elements: ["Ice"], skill: "Gold Digger", work: "Cooling Lv1, Farming Lv1"},
+            {no: "025", name: "Celaray", elements: ["Water"], skill: "Zephyr Glider", work: "Transporting Lv1, Watering Lv1"},
+            {no: "025B", name: "Celaray Lux", elements: ["Electric"], skill: "Thunder Glider", work: "Transporting Lv1, Generating Electricity Lv1"},
+            {no: "026", name: "Direhowl", elements: ["Neutral"], skill: "Direhowl Rider", work: "Gathering Lv1"},
+            {no: "027", name: "Tocotoco", elements: ["Neutral"], skill: "Eggbomb Launcher", work: "Gathering Lv1"},
+            {no: "028", name: "Flopie", elements: ["Grass"], skill: "Helper Bunny", work: "Planting Lv1, Handiwork Lv1, Medicine Production Lv1, Transporting Lv1, Gathering Lv1"},
+            {no: "029", name: "Mozzarina", elements: ["Neutral"], skill: "Milk Maker", work: "Farming Lv1"},
+            {no: "030", name: "Bristla", elements: ["Grass"], skill: "Princess Gaze", work: "Planting Lv1, Handiwork Lv1, Medicine Production Lv2, Transporting Lv1, Gathering Lv1"},
+            {no: "031", name: "Gobfin", elements: ["Water"], skill: "Angry Shark", work: "Handiwork Lv1, Transporting Lv1, Watering Lv2"},
+            {no: "031B", name: "Gobfin Ignis", elements: ["Fire"], skill: "Angry Shark", work: "Handiwork Lv1, Transporting Lv1, Kindling Lv2"},
+            {no: "032", name: "Hangyu", elements: ["Ground"], skill: "Flying Trapeze", work: "Handiwork Lv1, Transporting Lv2, Gathering Lv1"},
+            {no: "032B", name: "Hangyu Cryst", elements: ["Ice"], skill: "Flying Trapeze", work: "Handiwork Lv1, Transporting Lv2, Gathering Lv1, Cooling Lv1"},
+            {no: "033", name: "Mossanda", elements: ["Grass"], skill: "Grenadier Panda", work: "Planting Lv2, Handiwork Lv2, Lumbering Lv2, Transporting Lv3"},
+            {no: "033B", name: "Mossanda Lux", elements: ["Electric"], skill: "Grenadier Panda", work: "Generating Electricity Lv2, Handiwork Lv2, Lumbering Lv2, Transporting Lv3"},
+            {no: "034", name: "Woolipop", elements: ["Neutral"], skill: "Candy Pop", work: "Farming Lv1"},
+            {no: "035", name: "Caprity", elements: ["Grass"], skill: "Berry Picker", work: "Planting Lv2, Farming Lv1"},
+            {no: "035B", name: "Caprity Noct", elements: ["Dark"], skill: "Berry Picker", work: "Gathering Lv2, Farming Lv1"},
+            {no: "036", name: "Melpaca", elements: ["Neutral"], skill: "Pacapaca Wool", work: "Farming Lv1"},
+            {no: "037", name: "Eikthyrdeer", elements: ["Neutral"], skill: "Guardian of the Forest", work: "Lumbering Lv2"},
+            {no: "037B", name: "Eikthyrdeer Terra", elements: ["Ground"], skill: "Guardian of the Forest", work: "Lumbering Lv2, Mining Lv1"},
+            {no: "038", name: "Nitewing", elements: ["Neutral"], skill: "Travel Companion", work: "Gathering Lv2"},
+            {no: "039", name: "Ribunny", elements: ["Neutral"], skill: "Skilled Fingers", work: "Handiwork Lv1, Transporting Lv1, Gathering Lv1"},
+            {no: "039B", name: "Ribunny Botan", elements: ["Grass"], skill: "Skilled Fingers", work: "Planting Lv1, Handiwork Lv1, Transporting Lv1, Gathering Lv1"},
+            {no: "040", name: "Incineram", elements: ["Fire", "Dark"], skill: "Flameclaw Hunter", work: "Kindling Lv1, Handiwork Lv2, Transporting Lv2, Mining Lv1"},
+            {no: "040B", name: "Incineram Noct", elements: ["Dark"], skill: "Flameclaw Hunter", work: "Handiwork Lv2, Transporting Lv2, Mining Lv1"},
+            {no: "041", name: "Cinnamoth", elements: ["Grass"], skill: "Mysterious Scales", work: "Planting Lv2, Medicine Production Lv1"},
+            {no: "042", name: "Arsox", elements: ["Fire"], skill: "Warm Body", work: "Kindling Lv2, Lumbering Lv1"},
+            {no: "043", name: "Dumud", elements: ["Ground"], skill: "Soil Improver", work: "Transporting Lv1, Watering Lv1, Mining Lv2"},
+            {no: "043B", name: "Dumud Gild", elements: ["Ground"], skill: "Gold Rush", work: "Transporting Lv1, Watering Lv1, Mining Lv2, Farming Lv1"},
+            {no: "044", name: "Cawgnito", elements: ["Dark"], skill: "Telepeck", work: "Lumbering Lv1"},
+            {no: "045", name: "Leezpunk", elements: ["Dark"], skill: "Sixth Sense", work: "Handiwork Lv1, Transporting Lv1, Gathering Lv1"},
+            {no: "045B", name: "Leezpunk Ignis", elements: ["Fire"], skill: "Sixth Sense", work: "Kindling Lv1, Handiwork Lv1, Transporting Lv1, Gathering Lv1"},
+            {no: "046", name: "Loupmoon", elements: ["Dark"], skill: "Claws Glistening in the Dark", work: "Handiwork Lv2"},
+            {no: "046B", name: "Loupmoon Cryst", elements: ["Ice"], skill: "Claws Glistening in the Dark", work: "Handiwork Lv2, Cooling Lv1"},
+            {no: "047", name: "Galeclaw", elements: ["Neutral"], skill: "Galeclaw Rider", work: "Gathering Lv2"},
+            {no: "048", name: "Robinquill", elements: ["Grass"], skill: "Hawk Eye", work: "Planting Lv1, Handiwork Lv2, Lumbering Lv1, Medicine Production Lv1, Transporting Lv2, Gathering Lv2"},
+            {no: "048B", name: "Robinquill Terra", elements: ["Ground"], skill: "Hawk Eye", work: "Handiwork Lv2, Lumbering Lv1, Medicine Production Lv1, Transporting Lv2, Gathering Lv2, Mining Lv1"},
+            {no: "049", name: "Gorirat", elements: ["Neutral"], skill: "Full-power Gorilla Mode", work: "Handiwork Lv1, Lumbering Lv2, Transporting Lv3"},
+            {no: "049B", name: "Gorirat Terra", elements: ["Ground"], skill: "Full-power Gorilla Mode", work: "Handiwork Lv1, Lumbering Lv2, Transporting Lv3, Mining Lv1"},
+            {no: "050", name: "Beegarde", elements: ["Grass"], skill: "Worker Bee", work: "Planting Lv1, Handiwork Lv1, Lumbering Lv1, Medicine Production Lv1, Transporting Lv2, Gathering Lv1, Farming Lv1"},
+            {no: "051", name: "Elizabee", elements: ["Grass"], skill: "Queen Bee Command", work: "Planting Lv2, Handiwork Lv2, Lumbering Lv1, Medicine Production Lv2, Gathering Lv2"},
+            {no: "052", name: "Grintale", elements: ["Neutral"], skill: "Plump Body", work: "Gathering Lv2"},
+            {no: "053", name: "Swee", elements: ["Ice"], skill: "Fluffy", work: "Gathering Lv1, Cooling Lv1"},
+            {no: "054", name: "Sweepa", elements: ["Ice"], skill: "King of Fluff", work: "Gathering Lv2, Cooling Lv2"},
+            {no: "055", name: "Chillet", elements: ["Ice", "Dragon"], skill: "Wriggling Weasel", work: "Gathering Lv1, Cooling Lv1"},
+            {no: "055B", name: "Chillet Ignis", elements: ["Fire", "Dragon"], skill: "Wriggling Weasel", work: "Gathering Lv1, Kindling Lv1"},
+            {no: "056", name: "Univolt", elements: ["Electric"], skill: "Swift Deity", work: "Lumbering Lv1, Generating Electricity Lv2"},
+            {no: "057", name: "Foxcicle", elements: ["Ice"], skill: "Aurora Guide", work: "Cooling Lv2"},
+            {no: "058", name: "Pyrin", elements: ["Fire"], skill: "Red Hare", work: "Kindling Lv2, Lumbering Lv1"},
+            {no: "058B", name: "Pyrin Noct", elements: ["Dark"], skill: "Red Hare", work: "Lumbering Lv1"},
+            {no: "059", name: "Reindrix", elements: ["Ice"], skill: "Cool Body", work: "Lumbering Lv2, Cooling Lv2"},
+            {no: "060", name: "Rayhound", elements: ["Electric"], skill: "Jumping Force", work: "Generating Electricity Lv2"},
+            {no: "061", name: "Kitsun", elements: ["Fire"], skill: "Clear Mind", work: "Kindling Lv2"},
+            {no: "061B", name: "Kitsun Noct", elements: ["Dark"], skill: "Clear Mind", work: ""},
+            {no: "062", name: "Dazzi", elements: ["Electric"], skill: "Lady of Lightning", work: "Handiwork Lv1, Transporting Lv1, Generating Electricity Lv1"},
+            {no: "062B", name: "Dazzi Noct", elements: ["Dark"], skill: "Lady of Lightning", work: "Handiwork Lv1, Transporting Lv1"},
+            {no: "063", name: "Lunaris", elements: ["Neutral"], skill: "Antigravity", work: "Handiwork Lv3, Transporting Lv1, Gathering Lv1"},
+            {no: "064", name: "Dinossom", elements: ["Grass", "Dragon"], skill: "Fragrant Dragon", work: "Planting Lv2, Lumbering Lv2"},
+            {no: "064B", name: "Dinossom Lux", elements: ["Electric", "Dragon"], skill: "Fragrant Dragon", work: "Generating Electricity Lv2, Lumbering Lv2"},
+            {no: "065", name: "Surfent", elements: ["Water"], skill: "Swift Swimmer", work: "Watering Lv2"},
+            {no: "065B", name: "Surfent Terra", elements: ["Ground"], skill: "Swift Swimmer", work: "Mining Lv2"},
+            {no: "066", name: "Maraith", elements: ["Dark"], skill: "Messenger of Death", work: "Gathering Lv2, Mining Lv1"},
+            {no: "067", name: "Digtoise", elements: ["Ground"], skill: "Drill Crusher", work: "Mining Lv3"},
+            {no: "068", name: "Tombat", elements: ["Dark"], skill: "Ultrasonic Sensor", work: "Transporting Lv2, Gathering Lv2, Mining Lv2"},
+            {no: "069", name: "Lovander", elements: ["Neutral"], skill: "Heart Drain", work: "Handiwork Lv2, Medicine Production Lv2, Transporting Lv2, Mining Lv1"},
+            {no: "070", name: "Flambelle", elements: ["Fire"], skill: "Magma Tears", work: "Kindling Lv1, Handiwork Lv1, Transporting Lv1, Farming Lv1"},
+            {no: "071", name: "Vanwyrm", elements: ["Fire", "Dark"], skill: "Aerial Marauder", work: "Kindling Lv1, Transporting Lv3"},
+            {no: "071B", name: "Vanwyrm Cryst", elements: ["Ice", "Dark"], skill: "Aerial Marauder", work: "Cooling Lv1, Transporting Lv3"},
+            {no: "072", name: "Bushi", elements: ["Fire"], skill: "Brandish Blade", work: "Kindling Lv2, Handiwork Lv1, Lumbering Lv3, Transporting Lv2, Gathering Lv1"},
+            {no: "072B", name: "Bushi Noct", elements: ["Dark"], skill: "Brandish Blade", work: "Handiwork Lv1, Lumbering Lv3, Transporting Lv2, Gathering Lv1"},
+            {no: "073", name: "Beakon", elements: ["Electric"], skill: "Thunderous", work: "Transporting Lv3, Generating Electricity Lv2, Gathering Lv1"},
+            {no: "074", name: "Ragnahawk", elements: ["Fire"], skill: "Flame Wing", work: "Kindling Lv3, Transporting Lv3"},
+            {no: "075", name: "Katress", elements: ["Dark"], skill: "Grimoire Collector", work: "Handiwork Lv2, Medicine Production Lv2, Transporting Lv2"},
+            {no: "075B", name: "Katress Ignis", elements: ["Fire"], skill: "Grimoire Collector", work: "Kindling Lv2, Handiwork Lv2, Medicine Production Lv2, Transporting Lv2"},
+            {no: "076", name: "Wixen", elements: ["Fire"], skill: "Lord Fox", work: "Kindling Lv2, Handiwork Lv3, Transporting Lv2"},
+            {no: "076B", name: "Wixen Noct", elements: ["Dark"], skill: "Lord Fox", work: "Handiwork Lv3, Transporting Lv2"},
+            {no: "077", name: "Verdash", elements: ["Grass"], skill: "Grassland Speedster", work: "Planting Lv2, Handiwork Lv3, Lumbering Lv2, Transporting Lv2, Gathering Lv3"},
+            {no: "078", name: "Vaelet", elements: ["Grass"], skill: "Purification of Gaia", work: "Planting Lv2, Handiwork Lv2, Medicine Production Lv3, Transporting Lv1, Gathering Lv2"},
+            {no: "079", name: "Sibelyx", elements: ["Ice"], skill: "Silk Maker", work: "Medicine Production Lv2, Cooling Lv2, Farming Lv1"},
+            {no: "080", name: "Elphidran", elements: ["Dragon"], skill: "Amicable Holy Dragon", work: "Lumbering Lv2"},
+            {no: "080B", name: "Elphidran Aqua", elements: ["Water", "Dragon"], skill: "Amicable Holy Dragon", work: "Lumbering Lv2, Watering Lv1"},
+            {no: "081", name: "Kelpsea", elements: ["Water"], skill: "Aqua Spout", work: "Watering Lv1"},
+            {no: "081B", name: "Kelpsea Ignis", elements: ["Fire"], skill: "Flame Spout", work: "Kindling Lv1"},
+            {no: "082", name: "Azurobe", elements: ["Water", "Dragon"], skill: "Waterwing Dance", work: "Watering Lv3"},
+            {no: "082B", name: "Azurobe Cryst", elements: ["Ice", "Dragon"], skill: "Icewing Dance", work: "Cooling Lv3"},
+            {no: "083", name: "Cryolinx", elements: ["Ice"], skill: "Dragon Hunter", work: "Handiwork Lv1, Lumbering Lv2, Cooling Lv3"},
+            {no: "083B", name: "Cryolinx Terra", elements: ["Ground"], skill: "Dragon Hunter", work: "Handiwork Lv1, Lumbering Lv2, Mining Lv3"},
+            {no: "084", name: "Blazehowl", elements: ["Fire"], skill: "Hellflame Lion", work: "Kindling Lv3, Lumbering Lv2"},
+            {no: "084B", name: "Blazehowl Noct", elements: ["Dark"], skill: "Hellflame Lion", work: "Lumbering Lv2"},
+            {no: "085", name: "Relaxaurus", elements: ["Dragon", "Water"], skill: "Hungry Missile", work: "Transporting Lv1, Watering Lv2"},
+            {no: "085B", name: "Relaxaurus Lux", elements: ["Dragon", "Electric"], skill: "Hungry Missile", work: "Transporting Lv1, Generating Electricity Lv2"},
+            {no: "086", name: "Broncherry", elements: ["Grass"], skill: "Overaffectionate", work: "Planting Lv3"},
+            {no: "086B", name: "Broncherry Aqua", elements: ["Water"], skill: "Overaffectionate", work: "Watering Lv3"},
+            {no: "087", name: "Petallia", elements: ["Grass"], skill: "Blessing of the Flower Spirit", work: "Planting Lv3, Handiwork Lv2, Medicine Production Lv2, Transporting Lv1, Gathering Lv2"},
+            {no: "088", name: "Reptyro", elements: ["Fire", "Ground"], skill: "Ore-Loving Beast", work: "Kindling Lv3, Mining Lv3"},
+            {no: "088B", name: "Reptyro Cryst", elements: ["Ice", "Ground"], skill: "Ore-Loving Beast", work: "Cooling Lv3, Mining Lv3"},
+            {no: "089", name: "Kingpaca", elements: ["Neutral"], skill: "King of Muscles", work: "Gathering Lv1"},
+            {no: "089B", name: "Kingpaca Cryst", elements: ["Ice"], skill: "King of Muscles", work: "Gathering Lv1, Cooling Lv1"},
+            {no: "090", name: "Mammorest", elements: ["Grass"], skill: "Gaia Crusher", work: "Planting Lv2, Lumbering Lv2, Mining Lv2"},
+            {no: "090B", name: "Mammorest Cryst", elements: ["Ice"], skill: "Gaia Crusher", work: "Lumbering Lv2, Mining Lv2, Cooling Lv2"},
+            {no: "091", name: "Wumpo", elements: ["Ice"], skill: "Guardian of the Snowy Mountain", work: "Handiwork Lv2, Lumbering Lv3, Transporting Lv4, Cooling Lv2"},
+            {no: "091B", name: "Wumpo Botan", elements: ["Grass"], skill: "Guardian of the Snowy Mountain", work: "Planting Lv2, Handiwork Lv2, Lumbering Lv3, Transporting Lv4"},
+            {no: "092", name: "Warsect", elements: ["Ground", "Grass"], skill: "Hard Armor", work: "Planting Lv1, Handiwork Lv1, Lumbering Lv3, Transporting Lv3"},
+            {no: "092B", name: "Warsect Terra", elements: ["Ground"], skill: "Hard Armor", work: "Handiwork Lv1, Lumbering Lv3, Transporting Lv3, Mining Lv1"},
+            {no: "093", name: "Fenglope", elements: ["Neutral"], skill: "Wind and Clouds", work: "Lumbering Lv2"},
+            {no: "093B", name: "Fenglope Lux", elements: ["Electric"], skill: "Wind and Clouds", work: "Lumbering Lv2, Generating Electricity Lv1"},
+            {no: "094", name: "Felbat", elements: ["Dark"], skill: "Life Steal", work: "Medicine Production Lv3"},
+            {no: "095", name: "Quivern", elements: ["Dragon"], skill: "Sky Dragon's Affection", work: "Handiwork Lv1, Transporting Lv3, Gathering Lv2, Mining Lv2"},
+            {no: "095B", name: "Quivern Botan", elements: ["Grass", "Dragon"], skill: "Sky Dragon's Affection", work: "Planting Lv1, Handiwork Lv1, Transporting Lv3, Gathering Lv2, Mining Lv2"},
+            {no: "096", name: "Blazamut", elements: ["Fire"], skill: "Magma Kaiser", work: "Kindling Lv3, Mining Lv4"},
+            {no: "096B", name: "Blazamut Ryu", elements: ["Fire", "Dragon"], skill: "Magma Kaiser", work: "Kindling Lv4, Mining Lv4"},
+            {no: "097", name: "Helzephyr", elements: ["Dark"], skill: "Wings of Death", work: "Transporting Lv3"},
+            {no: "097B", name: "Helzephyr Lux", elements: ["Electric"], skill: "Wings of Death", work: "Transporting Lv3, Generating Electricity Lv1"},
+            {no: "098", name: "Astegon", elements: ["Dragon", "Dark"], skill: "Black Ankylosaur", work: "Handiwork Lv1, Mining Lv4"},
+            {no: "099", name: "Menasting", elements: ["Dark", "Ground"], skill: "Steel Scorpion", work: "Lumbering Lv2, Mining Lv3"},
+            {no: "099B", name: "Menasting Terra", elements: ["Ground"], skill: "Steel Scorpion", work: "Lumbering Lv2, Mining Lv4"},
+            {no: "100", name: "Anubis", elements: ["Ground"], skill: "Guardian of the Desert", work: "Handiwork Lv4, Transporting Lv2, Mining Lv3"},
+            {no: "101", name: "Jormuntide", elements: ["Dragon", "Water"], skill: "Stormbringer Sea Dragon", work: "Watering Lv4"},
+            {no: "101B", name: "Jormuntide Ignis", elements: ["Dragon", "Fire"], skill: "Stormbringer Sea Dragon", work: "Kindling Lv4"},
+            {no: "102", name: "Suzaku", elements: ["Fire"], skill: "Wings of Flame", work: "Kindling Lv3"},
+            {no: "102B", name: "Suzaku Aqua", elements: ["Water"], skill: "Wings of Flame", work: "Watering Lv3"},
+            {no: "103", name: "Grizzbolt", elements: ["Electric"], skill: "Yellow Tank", work: "Handiwork Lv2, Lumbering Lv2, Transporting Lv3, Generating Electricity Lv3"},
+            {no: "104", name: "Lyleen", elements: ["Grass"], skill: "Harvest Goddess", work: "Planting Lv4, Handiwork Lv3, Gathering Lv2, Medicine Production Lv3"},
+            {no: "104B", name: "Lyleen Noct", elements: ["Dark"], skill: "Harvest Goddess", work: "Handiwork Lv3, Gathering Lv2, Medicine Production Lv3"},
+            {no: "105", name: "Faleris", elements: ["Fire"], skill: "Scorching Predator", work: "Kindling Lv3, Transporting Lv3"},
+            {no: "105B", name: "Faleris Aqua", elements: ["Water"], skill: "Scorching Predator", work: "Watering Lv3, Transporting Lv3"},
+            {no: "106", name: "Orserk", elements: ["Dragon"], skill: "Ferocious Thunder Dragon", work: "Generating Electricity Lv4, Handiwork Lv2, Transporting Lv3"},
+            {no: "107", name: "Shadowbeak", elements: ["Dark"], skill: "Modified DNA", work: "Gathering Lv1"},
+            {no: "108", name: "Paladius", elements: ["Neutral"], skill: "Holy Knight", work: "Gathering Lv1"},
+            {no: "109", name: "Necromus", elements: ["Dark"], skill: "Cursed Knight", work: "Gathering Lv1"},
+            {no: "110", name: "Frostallion", elements: ["Ice"], skill: "Ice Steed", work: "Cooling Lv4"},
+            {no: "110B", name: "Frostallion Noct", elements: ["Dark"], skill: "Dark Steed", work: ""},
+            {no: "111", name: "Jetragon", elements: ["Dragon"], skill: "Aerial Missile", work: "Gathering Lv1"},
+            {no: "112", name: "Bellanoir", elements: ["Dark"], skill: "Phantom Veil", work: ""},
+            {no: "112B", name: "Bellanoir Libero", elements: ["Dark"], skill: "Phantom Veil Ultra", work: ""},
+            {no: "113", name: "Selyne", elements: ["Neutral"], skill: "Moonbeam", work: "Handiwork Lv4"},
+            {no: "114", name: "Croajiro", elements: ["Water"], skill: "Macho Frog", work: "Watering Lv1, Handiwork Lv1, Gathering Lv1, Transporting Lv1"},
+            {no: "114B", name: "Croajiro Noct", elements: ["Dark"], skill: "Shadow Stance", work: "Handiwork Lv1, Gathering Lv1, Transporting Lv1"},
+            {no: "115", name: "Lullu", elements: ["Water"], skill: "Aqua Heal", work: "Medicine Production Lv1"},
+            {no: "116", name: "Shroomer", elements: ["Grass"], skill: "Spore Cloud", work: "Planting Lv1, Gathering Lv1"},
+            {no: "116B", name: "Shroomer Noct", elements: ["Dark"], skill: "Spore Cloud", work: "Gathering Lv1"},
+            {no: "117", name: "Knocklem", elements: ["Ground"], skill: "Drill Rock", work: "Mining Lv4"},
+            {no: "118", name: "Splatterina", elements: ["Water"], skill: "Splash Paint", work: "Watering Lv1, Handiwork Lv1"},
+            {no: "119", name: "Prixter", elements: ["Ground"], skill: "Drill Spiral", work: "Mining Lv2"},
+            {no: "120", name: "Kelpaca", elements: ["Water"], skill: "Ocean Current", work: "Watering Lv2"},
+            {no: "121", name: "Yakumo", elements: ["Dark"], skill: "Shadow Lurker", work: "Gathering Lv2"},
+            {no: "122", name: "Drakeclaw", elements: ["Dragon"], skill: "Dragon Claw", work: "Lumbering Lv2"},
+            {no: "123", name: "Chyverahyena", elements: ["Fire"], skill: "Flame Pack", work: "Kindling Lv2"},
+            {no: "124", name: "Mimog", elements: ["Neutral"], skill: "Mimic", work: "Handiwork Lv2"},
+            {no: "125", name: "Xenovader", elements: ["Dark"], skill: "Alien Technology", work: "Handiwork Lv3"},
+            {no: "126", name: "Xenogard", elements: ["Dark"], skill: "Shield Bearer", work: "Handiwork Lv2"},
+            {no: "127", name: "Xenolord", elements: ["Dark"], skill: "Supreme Alien", work: "Handiwork Lv4"},
+            {no: "128", name: "Nitemary", elements: ["Dark"], skill: "Nightmare", work: "Gathering Lv2"},
+            {no: "129", name: "Starryon", elements: ["Electric"], skill: "Star Power", work: "Generating Electricity Lv3"},
+            {no: "130", name: "Silvegis", elements: ["Ice"], skill: "Frost Guard", work: "Cooling Lv3"},
+            {no: "131", name: "Smokie", elements: ["Fire"], skill: "Smoke Screen", work: "Kindling Lv2"},
+            {no: "132", name: "Celesdir", elements: ["Neutral"], skill: "Celestial Guide", work: "Transporting Lv2"},
+            {no: "133", name: "Omascul", elements: ["Water"], skill: "Tidal Force", work: "Watering Lv3"},
+            {no: "134", name: "Splatterina", elements: ["Water"], skill: "Ink Splash", work: "Watering Lv2, Handiwork Lv2"},
+            {no: "135", name: "Tarantriss", elements: ["Ground"], skill: "Web Trap", work: "Mining Lv2"},
+            {no: "136", name: "Azurmane", elements: ["Water"], skill: "Aqua Mane", work: "Watering Lv3"},
+            {no: "137", name: "Bastigor", elements: ["Ground"], skill: "Rock Shield", work: "Mining Lv3"},
+            {no: "138", name: "Prunelia", elements: ["Grass"], skill: "Pruning", work: "Planting Lv3"},
+            {no: "139", name: "Nyafia", elements: ["Dark"], skill: "Shadow Cat", work: "Gathering Lv2"},
+            {no: "140", name: "Gildane", elements: ["Ground"], skill: "Gold Rush", work: "Mining Lv3, Farming Lv1"},
+            // Tides of Terraria Update Pals
+            {no: "141", name: "Herbil", elements: ["Grass", "Neutral"], skill: "Herbil Pulse", work: "Medicine Production Lv2, Planting Lv1"},
+            {no: "142", name: "Icelyn", elements: ["Ice"], skill: "Icewing Dance", work: "Cooling Lv3"},
+            {no: "143", name: "Fuack Ignis", elements: ["Fire"], skill: "Fire Tackle", work: "Kindling Lv1, Watering Lv1, Handiwork Lv1, Transporting Lv1"},
+            {no: "144", name: "Palumba", elements: ["Grass"], skill: "Samba Step", work: "Planting Lv2, Gathering Lv2, Mining Lv3"},
+            {no: "145", name: "Braloha", elements: ["Grass", "Ground"], skill: "Balmy Weather", work: "Planting Lv4, Gathering Lv4, Mining Lv2"},
+            {no: "146", name: "Munchill", elements: ["Ice"], skill: "Icy Maw", work: "Watering Lv1, Cooling Lv2, Transporting Lv1"},
+            {no: "147", name: "Polapup", elements: ["Ice"], skill: "Rider of the Snowy Mountain", work: "Watering Lv2, Cooling Lv3"},
+            {no: "148", name: "Turtacle", elements: ["Water"], skill: "Spikey Carrier", work: "Watering Lv2, Mining Lv1, Transporting Lv2"},
+            {no: "148B", name: "Turtacle Terra", elements: ["Ground"], skill: "Spikey Carrier", work: "Mining Lv2, Transporting Lv2"},
+            {no: "149", name: "Jellroy", elements: ["Water"], skill: "Royal Jelly", work: "Watering Lv3, Medicine Production Lv2"},
+            {no: "150", name: "Jelliette", elements: ["Water"], skill: "Graceful Swim", work: "Watering Lv2, Handiwork Lv1"},
+            {no: "151", name: "Gloopie", elements: ["Water", "Dark"], skill: "Gloopy Grip", work: "Watering Lv1, Transporting Lv1"},
+            {no: "152", name: "Finsider", elements: ["Water"], skill: "Weapon Weight Reduction", work: "Watering Lv1, Transporting Lv1"},
+            {no: "152B", name: "Finsider Ignis", elements: ["Fire"], skill: "Weapon Weight Reduction", work: "Kindling Lv1, Transporting Lv1"},
+            {no: "153", name: "Ghangler", elements: ["Water"], skill: "Deep Sea Fisher", work: "Watering Lv2, Gathering Lv1"},
+            {no: "153B", name: "Ghangler Ignis", elements: ["Fire"], skill: "Deep Sea Fisher", work: "Kindling Lv2, Gathering Lv1"},
+            {no: "154", name: "Whalaska", elements: ["Water"], skill: "Ocean Lord", work: "Watering Lv4, Transporting Lv2"},
+            {no: "154B", name: "Whalaska Ignis", elements: ["Fire"], skill: "Ocean Lord", work: "Kindling Lv4, Transporting Lv2"},
+            {no: "155", name: "Neptilius", elements: ["Water"], skill: "Tidal Sovereign", work: "Watering Lv4"}
+        ];
+
+        let filteredData = [...palData];
+        let palStats = {};
+        let medalStats = {};
+
+        function renderTable() {
+            const tbody = document.getElementById('palTableBody');
+            tbody.innerHTML = '';
+
+            filteredData.forEach(pal => {
+                const caught = palStats[pal.no] || 0;
+                const hasMedal = medalStats[pal.no] || false;
+                const needed = Math.max(0, 12 - caught);
+                const row = document.createElement('tr');
+                
+                let elementsHtml = pal.elements.map(el => 
+                    `<span class="element ${el.toLowerCase()}">${el}</span>`
+                ).join('');
+
+                let neededClass = 'none';
+                if (caught >= 12) neededClass = 'complete';
+                else if (caught > 0) neededClass = 'partial';
+
+                row.innerHTML = `
+                    <td class="pal-number">${pal.no}</td>
+                    <td class="pal-name">${pal.name}</td>
+                    <td>${elementsHtml}</td>
+                    <td>${pal.skill}</td>
+                    <td>${pal.work}</td>
+                    <td><input type="number" class="caught-input" min="0" max="999" value="${caught}" data-pal="${pal.no}" onchange="updateCaught(this)"></td>
+                    <td><div class="needed ${neededClass}">${needed}</div></td>
+                    <td><input type="checkbox" class="medal-checkbox" ${hasMedal ? 'checked' : ''} data-pal="${pal.no}" onchange="updateMedal(this)"></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateCaught(input) {
+            const palNo = input.dataset.pal;
+            const caught = parseInt(input.value) || 0;
+            palStats[palNo] = caught;
+            localStorage.setItem('palworldStats', JSON.stringify(palStats));
+            updateStats();
+            renderTable();
+        }
+
+        function updateMedal(checkbox) {
+            const palNo = checkbox.dataset.pal;
+            medalStats[palNo] = checkbox.checked;
+            localStorage.setItem('palworldMedals', JSON.stringify(medalStats));
+            updateStats();
+        }
+
+        function updateStats() {
+            const totalPals = palData.length;
+            const completePals = Object.values(palStats).filter(count => count >= 12).length;
+            const totalCaught = Object.values(palStats).reduce((sum, count) => sum + count, 0);
+            const medalsEarned = Object.values(medalStats).filter(hasMedal => hasMedal).length;
+            const progressPercent = Math.round((completePals / totalPals) * 100);
+
+            document.getElementById('totalPals').textContent = totalPals;
+            document.getElementById('completePals').textContent = completePals;
+            document.getElementById('totalCaught').textContent = totalCaught;
+            document.getElementById('medalsEarned').textContent = medalsEarned;
+            document.getElementById('progressPercent').textContent = progressPercent + '%';
+        }
+
+        function filterPals(filterType) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            filteredData = palData.filter(pal => {
+                const matchesSearch = pal.name.toLowerCase().includes(searchTerm) || 
+                                    pal.no.includes(searchTerm);
+                
+                if (!matchesSearch) return false;
+
+                const caught = palStats[pal.no] || 0;
+                switch(filterType) {
+                    case 'all': return true;
+                    case 'needed': return caught < 12;
+                    case 'complete': return caught >= 12;
+                    default: return true;
+                }
+            });
+
+            renderTable();
+        }
+
+        function searchPals() {
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+            filterPals(activeFilter);
+        }
+
+        function exportToCSV() {
+            let csv = 'Pal Number,Pal Name,Elements,Partner Skill,Work Suitability,Caught,Still Need,Medal Earned\n';
+            
+            palData.forEach(pal => {
+                const caught = palStats[pal.no] || 0;
+                const hasMedal = medalStats[pal.no] || false;
+                const needed = Math.max(0, 12 - caught);
+                const elements = pal.elements.join('/');
+                csv += `"${pal.no}","${pal.name}","${elements}","${pal.skill}","${pal.work}","${caught}","${needed}","${hasMedal ? 'Yes' : 'No'}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'palworld_collection_tracker.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', searchPals);
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => filterPals(e.target.dataset.filter));
+        });
+
+        // Load saved data and initialize
+        const savedStats = localStorage.getItem('palworldStats');
+        const savedMedals = localStorage.getItem('palworldMedals');
+        if (savedStats) {
+            palStats = JSON.parse(savedStats);
+        }
+        if (savedMedals) {
+            medalStats = JSON.parse(savedMedals);
+        }
+
+        updateStats();
+        renderTable();
+    </script>
+</body>
+</html>
