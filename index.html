@@ -274,6 +274,8 @@
             <button class="filter-btn" data-filter="needed">Need More</button>
             <button class="filter-btn" data-filter="complete">Complete (12+)</button>
             <button class="export-btn" onclick="exportToCSV()">📊 Export to CSV</button>
+            <input type="file" id="csvImport" accept=".csv" style="display: none;" onchange="importFromCSV(event)">
+            <button class="export-btn" onclick="document.getElementById('csvImport').click()" style="background: #3b82f6;">📥 Import CSV</button>
         </div>
 
         <div class="stats">
@@ -492,13 +494,13 @@
             {no: "115", name: "Lullu", elements: ["Water"], skill: "Aqua Heal", work: "Medicine Production Lv1"},
             {no: "116", name: "Shroomer", elements: ["Grass"], skill: "Spore Cloud", work: "Planting Lv1, Gathering Lv1"},
             {no: "116B", name: "Shroomer Noct", elements: ["Dark"], skill: "Spore Cloud", work: "Gathering Lv1"},
-            {no: "117", name: "Knocklem", elements: ["Ground"], skill: "Drill Rock", work: "Mining Lv4"},
-            {no: "118", name: "Splatterina", elements: ["Water"], skill: "Splash Paint", work: "Watering Lv1, Handiwork Lv1"},
+            {no: "117", name: "KiKit", elements: ["Ground"], skill: "Rollin' Full Oil", work: "Mining Lv1"},
+            {no: "118", name: "Sootseer", elements: ["Dark", "Fire"], skill: "Grave Robber", work: "Kindling Lv1, Handiwork Lv2, Gathering Lv1, Mining Lv2, Farming Lv1"},
             {no: "119", name: "Prixter", elements: ["Ground"], skill: "Drill Spiral", work: "Mining Lv2"},
-            {no: "120", name: "Kelpaca", elements: ["Water"], skill: "Ocean Current", work: "Watering Lv2"},
+            {no: "120", name: "Knocklem", elements: ["Ground"], skill: "Steel Gaurdian Mode", work: "Gathering Lv3, Mining Lv4, Transporting Lv4"},
             {no: "121", name: "Yakumo", elements: ["Dark"], skill: "Shadow Lurker", work: "Gathering Lv2"},
-            {no: "122", name: "Drakeclaw", elements: ["Dragon"], skill: "Dragon Claw", work: "Lumbering Lv2"},
-            {no: "123", name: "Chyverahyena", elements: ["Fire"], skill: "Flame Pack", work: "Kindling Lv2"},
+            {no: "122", name: "Dogen", elements: ["Neutral"], skill: "Homeward Prayer", work: "Handiwork Lv3, Gathering Lv2, Lumbering Lv2, Medicine Production Lv1, Transporting Lv2"},
+            {no: "123", name: "Dazemu", elements: ["Ground"], skill: "Sand Sprint", work: "Gathering Lv2"},
             {no: "124", name: "Mimog", elements: ["Neutral"], skill: "Mimic", work: "Handiwork Lv2"},
             {no: "125", name: "Xenovader", elements: ["Dark"], skill: "Alien Technology", work: "Handiwork Lv3"},
             {no: "126", name: "Xenogard", elements: ["Dark"], skill: "Shield Bearer", work: "Handiwork Lv2"},
@@ -605,19 +607,23 @@
         }
 
         function filterPals(filterType) {
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (filterType) {
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-filter="${filterType}"]`).classList.add('active');
+            }
 
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
 
             filteredData = palData.filter(pal => {
                 const matchesSearch = pal.name.toLowerCase().includes(searchTerm) || 
-                                    pal.no.includes(searchTerm);
+                                    pal.no.includes(searchTerm) ||
+                                    pal.elements.some(element => element.toLowerCase().includes(searchTerm));
                 
                 if (!matchesSearch) return false;
 
                 const caught = palStats[pal.no] || 0;
-                switch(filterType) {
+                switch(activeFilter) {
                     case 'all': return true;
                     case 'needed': return caught < 12;
                     case 'complete': return caught >= 12;
@@ -629,8 +635,7 @@
         }
 
         function searchPals() {
-            const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
-            filterPals(activeFilter);
+            filterPals(); // Call without parameter to keep current filter
         }
 
         function exportToCSV() {
@@ -653,10 +658,137 @@
             window.URL.revokeObjectURL(url);
         }
 
+        function importFromCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csv = e.target.result;
+                    const lines = csv.split('\n');
+                    
+                    // Skip header row
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue;
+                        
+                        // Parse CSV line (handle quoted fields)
+                        const fields = parseCSVLine(line);
+                        if (fields.length < 8) continue;
+                        
+                        const palNumber = fields[0];
+                        const caught = parseInt(fields[5]) || 0;
+                        const medalEarned = fields[7].toLowerCase() === 'yes';
+                        
+                        // Update stats
+                        if (palNumber) {
+                            palStats[palNumber] = caught;
+                            medalStats[palNumber] = medalEarned;
+                        }
+                    }
+                    
+                    // Save to localStorage
+                    localStorage.setItem('palworldStats', JSON.stringify(palStats));
+                    localStorage.setItem('palworldMedals', JSON.stringify(medalStats));
+                    
+                    // Update display
+                    updateStats();
+                    renderTable();
+                    
+                    // Show success message
+                    showNotification('✅ CSV imported successfully!', 'success');
+                    
+                } catch (error) {
+                    console.error('Import error:', error);
+                    showNotification('❌ Error importing CSV. Please check the file format.', 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+            // Clear the input so the same file can be imported again
+            event.target.value = '';
+        }
+
+        function parseCSVLine(line) {
+            const fields = [];
+            let current = '';
+            let inQuotes = false;
+            let i = 0;
+            
+            while (i < line.length) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    if (inQuotes && line[i + 1] === '"') {
+                        // Escaped quote
+                        current += '"';
+                        i += 2;
+                    } else {
+                        // Toggle quote state
+                        inQuotes = !inQuotes;
+                        i++;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    // Field separator
+                    fields.push(current);
+                    current = '';
+                    i++;
+                } else {
+                    current += char;
+                    i++;
+                }
+            }
+            
+            // Add the last field
+            fields.push(current);
+            
+            return fields;
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                background: ${type === 'success' ? '#22c55e' : '#ef4444'};
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
         // Event listeners
         document.getElementById('searchInput').addEventListener('input', searchPals);
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => filterPals(e.target.dataset.filter));
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                filterPals(e.target.dataset.filter);
+            });
         });
 
         // Load saved data and initialize
